@@ -349,9 +349,18 @@ class Table(models.Model):
 
         # TODO: move this hard-coded mixin/manager injections to maybe a model
         # proxy
-        if self.dataset.slug == "socios-brasil" and self.name == "empresa":
+        dataset_slug = self.dataset.slug
+        name = self.name
+        if dataset_slug == "socios-brasil" and name == "empresa":
             mixins.insert(0, data_models.SociosBrasilEmpresaMixin)
             managers["objects"] = data_models.SociosBrasilEmpresaQuerySet.as_manager()
+        elif dataset_slug == "covid19":
+            from covid19 import qs
+
+            if name == "boletim":
+                managers["objects"] = qs.Covid19BoletimQuerySet.as_manager()
+            elif name == "caso":
+                managers["objects"] = qs.Covid19CasoQuerySet.as_manager()
 
         Model = dynamic_models.create_model_class(
             name=self.model_name, module="core.models", fields=fields, mixins=mixins, meta=meta, managers=managers,
